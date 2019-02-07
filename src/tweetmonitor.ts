@@ -37,6 +37,7 @@ export class TweetMonitor {
       return '';
     }
     console.log(tweets);
+    Logger.log(tweets);
     PropertiesService.getScriptProperties().setProperty('TW_NEWEST_TWEETID', tweets[0].id_str);
 
     let result = '';
@@ -47,6 +48,6 @@ export class TweetMonitor {
       console.info(tweet);
     }
 
-    return result;
+    return tweets as string;
   }
 }
