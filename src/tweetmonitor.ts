@@ -18,6 +18,7 @@ export class TweetMonitor {
 
   private apiUserTimelineUrl =
     'https://api.twitter.com/1.1/statuses/user_timeline.json?include_rts=false&exclude_replies=true&';
+
   getUserTimeline(screenName: string, id: string): string {
     const apiUrl = this.apiUserTimelineUrl + 'screen_name=' + screenName + '&since_id=' + id;
     const apiOptions: GoogleAppsScript.URL_Fetch.URLFetchRequestOptions = {
