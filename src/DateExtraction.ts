@@ -6,7 +6,7 @@ export class DateExtraction {
 	 * ツイートからメンテナンス日を抽出する
 	 */
 	public extractMaintenanceDate(): string {
-		const dataRegArray: RegExpMatchArray = this.tweetText.match(/[0-9]+\/[0-9]+\(.\)/g);
+		const dataRegArray: RegExpMatchArray = this.tweetText.match(/[0-9]+\/[0-9]+/g);
 		if (dataRegArray === null) {
 			console.log('no 「date」 in tweet text!');
 			return null;
