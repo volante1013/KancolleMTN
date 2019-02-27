@@ -72,19 +72,4 @@ export class CalendarManager {
 		this.endDate = new Date(endDateStr);
 		console.log('抽出した開始時間 => ' + this.startDate.toString() + ' 抽出した終了時間 => ' + this.endDate.toString());
 	}
-
-	public testCalander() {
-		const cal = CalendarApp.getCalendarById(this.calendarId);
-		const events = cal.getEventsForDay(new Date('2019/2/8(金)'));
-		events.forEach(event => {
-			console.log(event.getTitle());
-			if (event.getTitle() === '艦これメンテ') {
-				console.log(event.getStartTime().getHours() + ':' + event.getStartTime().getMinutes());
-				console.log(event.getEndTime().getHours() + ':' + event.getEndTime().getMinutes());
-				event.setTime(new Date('2019/2/8 11:00'), new Date('2019/2/8 20:30'));
-			}
-		});
-
-		cal.createEvent('艦これメンテ', new Date('2019/2/8 11:00'), new Date('2019/2/8 20:30')).addPopupReminder(300);
-	}
 }
