@@ -1,4 +1,3 @@
-import { TweetMonitor } from './tweetmonitor';
 import { DateExtraction } from './DateExtraction';
 import { CalendarManager } from './CalendarManager';
 declare var global: any;
