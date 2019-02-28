@@ -8,7 +8,7 @@ export class DateExtraction {
 	public extractMaintenanceDate(): string {
 		const dataRegArray: RegExpMatchArray = this.tweetText.match(/[0-9]+\/[0-9]+/g);
 		if (dataRegArray === null) {
-			console.log('no 「date」 in tweet text!');
+			console.log('No match date in tweet');
 			return null;
 		}
 		console.log(dataRegArray);
@@ -23,7 +23,7 @@ export class DateExtraction {
 		const timeRegArray: RegExpMatchArray = this.tweetText.match(/[0-9]+:[0-9]+/g);
 		if (timeRegArray === null || timeRegArray.length !== 2) {
 			// ツイートに時間がないとき または 抽出した時間が2つでないとき
-			console.log('timeArray === null or timeArray !== 2');
+			console.log(timeRegArray === null ? 'No match time in tweet' : 'Matched time string is over 2');
 			return null;
 		}
 		// ツイートに時間があるとき
