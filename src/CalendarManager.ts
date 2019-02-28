@@ -17,7 +17,8 @@ export class CalendarManager {
 		const events = cal.getEventsForDay(maintenanceDate);
 
 		// リマインダー時刻を設定
-		this.reminderDate = new Date(this.maintenanceDateStr + ' 6:50');
+		const reminderTime: string = PropertiesService.getScriptProperties().getProperty('REMINDER_TIME');
+		this.reminderDate = new Date(this.maintenanceDateStr + ' ' + reminderTime);
 		const minutesbefore = (this.startDate.getTime() - this.reminderDate.getTime()) / (1000 * 60);
 
 		// 予定の中に「艦これメンテ」というタイトルの予定があるかどうか
