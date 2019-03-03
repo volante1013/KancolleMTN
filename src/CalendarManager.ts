@@ -10,7 +10,7 @@ export class CalendarManager {
 	 * registerMaintenanceEvent
 	 * メンテナンス日をカレンダーに登録する
 	 */
-	public registerMaintenanceEvent(date: string, times: string[]) {
+	public registerMaintenanceEvent(date: string, times: string[]): string {
 		// 抽出した日付と時間を整形する
 		this.convertStrToDate(date, times);
 
@@ -38,8 +38,8 @@ export class CalendarManager {
 			// メンテ日に'艦これメンテ'というイベントがない && 時間が抽出できなかった => AllDayでイベント作成
 			if (times === null) {
 				cal.createAllDayEvent(this.eventTitle, maintenanceDate);
-				console.log(`createAllDayEvent[${maintenanceDate.toString()}]`);
-				return;
+				console.log(`createAllDayEvent(${maintenanceDate.toString()})`);
+				return `RegisterComplete: createAlldayEvent(${maintenanceDate.toDateString()})`;
 			}
 
 			// あればその開始時間と終了時間を取得
@@ -48,17 +48,21 @@ export class CalendarManager {
 			console.log(`StartTime:${startTime.toString()} EndTime:${endTime.toString()}`);
 
 			// 開始時間と終了時間がなければ抽出した時間を登録
+			let result: string = '';
 			if (startTime.getTime() !== this.startDate.getTime() || endTime.getTime() !== this.endDate.getTime()) {
 				event.setTime(this.startDate, this.endDate).addPopupReminder(minutesbefore);
+				result = `RegisterComplete: event.setTime(${this.startDate.toTimeString()}, ${this.endDate.toTimeString()}).addPopupReminder(${this.reminderDate.toTimeString()})`;
 			} else {
 				console.log('Maintenance Event is Already registered');
+				result = `NoRegisterRequired: Maintenance Event is Already registered.`;
 			}
-			return;
+			return result;
 		}
 
 		// 予定自体がなければその予定を新規作成する
 		cal.createEvent(this.eventTitle, this.startDate, this.endDate).addPopupReminder(minutesbefore);
-		console.log(`createEvent[reminder before ${minutesbefore} min]`);
+		console.log(`createEvent(reminder before ${minutesbefore} min)`);
+		return `RegisterComplete: createEvent(reminder before ${minutesbefore} min)`;
 	}
 
 	/**
