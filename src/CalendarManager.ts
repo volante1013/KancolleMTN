@@ -4,65 +4,69 @@ export class CalendarManager {
 	private endDate: Date | null = null;
 	private reminderDate: Date | null = null;
 	private readonly eventTitle: string = '艦これメンテ';
-	constructor(private calendarId: string) {}
+	constructor(private calendarId: string, private tweetText: string) {}
 
 	/**
 	 * registerMaintenanceEvent
 	 * メンテナンス日をカレンダーに登録する
 	 */
 	public registerMaintenanceEvent(date: string, times: string[]): string {
+		const cal = CalendarApp.getCalendarById(this.calendarId);
+		let result: string = '';
+
 		// 抽出した日付と時間を整形する
 		this.convertStrToDate(date, times);
-
-		const cal = CalendarApp.getCalendarById(this.calendarId);
 
 		// 艦これメンテ日の予定を取得
 		const maintenanceDate: Date = new Date(this.maintenanceDateStr);
 		const events = cal.getEventsForDay(maintenanceDate);
 
-		// リマインダー時刻を設定
-		const reminderTime: string = PropertiesService.getScriptProperties().getProperty('REMINDER_TIME');
-		this.reminderDate = new Date(this.maintenanceDateStr + ' ' + reminderTime);
-		const minutesbefore = (this.startDate.getTime() - this.reminderDate.getTime()) / (1000 * 60);
+		const calcReminderMin = (): number => {
+			// リマインダー時刻を設定
+			const reminderTime: string = PropertiesService.getScriptProperties().getProperty('REMINDER_TIME');
+			this.reminderDate = new Date(this.maintenanceDateStr + ' ' + reminderTime);
+			return (this.startDate.getTime() - this.reminderDate.getTime()) / (1000 * 60);
+		};
 
 		// 予定の中に「艦これメンテ」というタイトルの予定があるかどうか
 		for (let index = 0; index < events.length; index++) {
 			const event = events[index];
-
 			const title: string = event.getTitle();
 			console.log(`EventTitle:${title}`);
-			if (title !== this.eventTitle) {
-				continue;
+			if (title === this.eventTitle) {
+				if (times === null) {
+					// すでにAllDayまたは時間付きでイベントが作られている && 時間が抽出できなかった => 何もしない
+					result = `NoRegisterRequired: event.Title === ${this.eventTitle} && times === null`;
+				} else if (event.isAllDayEvent()) {
+					// AllDayEventなら時間が設定されていないはずなので、リマインダー時間とともに設定
+					event
+						.setTime(this.startDate, this.endDate)
+						.addPopupReminder(calcReminderMin())
+						.setDescription(this.calendarId);
+					result = `RegisterComplete: event.setTime(${this.startDate.toTimeString()}, ${this.endDate.toTimeString()}).addPopupReminder(${this.reminderDate.toTimeString()})`;
+				} else {
+					// AllDayEventでなければ時間が登録されているはずなので何もしない
+					console.log('Maintenance Event is Already registered');
+					result = `NoRegisterRequired: Maintenance Event is Already registered.`;
+				}
+				return result;
 			}
-
-			// メンテ日に'艦これメンテ'というイベントがない && 時間が抽出できなかった => AllDayでイベント作成
-			if (times === null) {
-				cal.createAllDayEvent(this.eventTitle, maintenanceDate);
-				console.log(`createAllDayEvent(${maintenanceDate.toString()})`);
-				return `RegisterComplete: createAlldayEvent(${maintenanceDate.toDateString()})`;
-			}
-
-			// あればその開始時間と終了時間を取得
-			let startTime = event.getStartTime();
-			let endTime = event.getEndTime();
-			console.log(`StartTime:${startTime.toString()} EndTime:${endTime.toString()}`);
-
-			// 開始時間と終了時間がなければ抽出した時間を登録
-			let result: string = '';
-			if (startTime.getTime() !== this.startDate.getTime() || endTime.getTime() !== this.endDate.getTime()) {
-				event.setTime(this.startDate, this.endDate).addPopupReminder(minutesbefore);
-				result = `RegisterComplete: event.setTime(${this.startDate.toTimeString()}, ${this.endDate.toTimeString()}).addPopupReminder(${this.reminderDate.toTimeString()})`;
-			} else {
-				console.log('Maintenance Event is Already registered');
-				result = `NoRegisterRequired: Maintenance Event is Already registered.`;
-			}
-			return result;
 		}
 
-		// 予定自体がなければその予定を新規作成する
-		cal.createEvent(this.eventTitle, this.startDate, this.endDate).addPopupReminder(minutesbefore);
-		console.log(`createEvent(reminder before ${minutesbefore} min)`);
-		return `RegisterComplete: createEvent(reminder before ${minutesbefore} min)`;
+		if (times === null) {
+			// メンテ日に'艦これメンテ'というイベントがない && 時間が抽出できなかった => AllDayでイベント作成
+			cal.createAllDayEvent(this.eventTitle, maintenanceDate).setDescription(this.tweetText);
+			console.log(`createAllDayEvent(${maintenanceDate.toString()})`);
+			result = `RegisterComplete: createAlldayEvent(${maintenanceDate.toDateString()})`;
+		} else {
+			const minutesbefore = calcReminderMin();
+			cal.createEvent(this.eventTitle, this.startDate, this.endDate)
+				.addPopupReminder(minutesbefore)
+				.setDescription(this.tweetText);
+			console.log(`createEvent(reminder before ${minutesbefore} min)`);
+			result = `RegisterComplete: createEvent(reminder before ${minutesbefore} min)`;
+		}
+		return result;
 	}
 
 	/**

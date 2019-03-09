@@ -24,9 +24,10 @@ global.doPost = (e): GoogleAppsScript.Content.TextOutput => {
 
 	// メンテナンスを予定として指定したカレンダーに登録
 	const calendarID: string = PropertiesService.getScriptProperties().getProperty('CALENDAR_ID');
-	const cm: CalendarManager = new CalendarManager(calendarID);
+	const cm: CalendarManager = new CalendarManager(calendarID, tweetText);
 	result.message = cm.registerMaintenanceEvent(date, times);
 
 	// 結果を返す
-	return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+	console.log(result.message);
+	// return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
 };
